@@ -32,34 +32,6 @@ const QUICK_PROMPTS = [
   { label: "Private consult", prompt: "I want a private consultation for a high-discretion executive workflow." },
 ];
 
-function localAnswer(message: string): string {
-  const lower = message.toLowerCase();
-
-  if (lower.includes("phase 1") || lower.includes("calendar") || lower.includes("inbox") || lower.includes("briefing")) {
-    return "Phase 1 is designed for executives who need one intelligent command center across calendars, inboxes, meetings, travel, and follow-ups. It is usually the best starting point when time is being lost to fragmented tools and manual coordination. It delivers a daily executive briefing generated from approved sources.";
-  }
-  if (lower.includes("phase 2") || lower.includes("assistant") || lower.includes("chief of staff") || lower.includes(" ea ") || lower.includes("executive assistant")) {
-    return "Phase 2 integrates the AI Concierge with your existing Executive Assistant or Chief of Staff. The AI prepares drafts, briefs, summaries, routing suggestions, and approval queues while your human team keeps judgment and final control. Your assistant stops spending hours assembling context and starts operating with a faster, more intelligent support layer.";
-  }
-  if (lower.includes("phase 3") || lower.includes("personalized") || lower.includes("lifestyle") || lower.includes("preferences") || lower.includes("style")) {
-    return "Phase 3 personalizes the system around your communication style, lifestyle, decision patterns, travel preferences, meeting preparation style, and private workflow rules. It is ideal when the AI must adapt to the executive rather than force a generic process. Every workflow is custom — shaped around the individual.";
-  }
-  if (lower.includes("phase 4") || lower.includes("white-glove") || lower.includes("uhnw") || lower.includes("celebrity") || lower.includes("private office") || lower.includes("confidential")) {
-    return "Phase 4 is the premium white-glove implementation for high-discretion environments. It can include private deployment architecture, encrypted intake, role-based access, staff training, approval gates, and advanced automation across executive systems. It is appropriate for UHNWIs, celebrities, public figures, major founders, private equity leaders, and family offices.";
-  }
-  if (lower.includes("consult") || lower.includes("price") || lower.includes("budget") || lower.includes("cost") || lower.includes("start") || lower.includes("begin")) {
-    return "A private consultation usually begins with an operational assessment. We review your executive support structure, current friction points, desired automation boundaries, security expectations, and the level of human approval required. Engagements begin at $15,000 and scale to custom white-glove retainers. We recommend submitting an inquiry through our Private Inquiry form for a confidential review.";
-  }
-  if (lower.includes("security") || lower.includes("privacy") || lower.includes("encrypt") || lower.includes("data")) {
-    return "Our recommended architecture follows SOC 2 Type II readiness principles and ISO 27001-aligned operating practices. Inquiries are encrypted before transmission. Access is restricted to authorized personnel. High-risk actions remain subject to human approval. Client data is never used to train public AI models without written permission. Clients with heightened confidentiality requirements may request a private deployment architecture.";
-  }
-  if (lower.includes("trust") || lower.includes("safe") || lower.includes("certification")) {
-    return "Executive AI Concierge Services is designed for environments where privacy, accuracy, and judgment matter. We operate with encrypted intake, access controls, secure database design, human approval gates, audit logging, and clear data handling practices. We do not claim active SOC 2 or ISO 27001 certification — we represent our security posture accurately as readiness-aligned.";
-  }
-
-  return "The Executive AI Concierge is designed as a governed AI operating layer around your calendar, inbox, meetings, assistant workflows, and private preferences. For most clients, we begin by identifying where time is being lost and which workflows can be safely delegated to AI with human approval controls. I am happy to answer questions about any of our four service phases, or you may submit a private inquiry for a confidential consultation.";
-}
-
 function detectHighValue(message: string): boolean {
   const lower = message.toLowerCase();
   return HIGH_VALUE_SIGNALS.some((s) => lower.includes(s));
@@ -108,7 +80,7 @@ export default function AIConciergeWidget() {
     handleSendMessage(prompt);
   }
 
-  function handleSendMessage(messageText?: string) {
+  async function handleSendMessage(messageText?: string) {
     const text = (messageText ?? inputValue).trim();
     if (!text) return;
 
@@ -117,12 +89,50 @@ export default function AIConciergeWidget() {
     setInputValue("");
 
     const highValue = detectHighValue(text);
-    const reply = localAnswer(text);
 
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
+    // Add loading indicator
+    setMessages((prev) => [...prev, { role: "assistant", text: "Processing your inquiry..." }]);
+
+    try {
+      // Call MiMo API for grounded response
+      const response = await fetch("/api/concierge-mimo", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+
+      const data = await response.json();
+      const reply = data.ok ? data.reply : "I encountered an issue processing your request. Please try again or submit a private inquiry.";
+
+      // Replace loading indicator with actual reply
+      setMessages((prev) => {
+        const updated = [...prev];
+        if (updated[updated.length - 1].text === "Processing your inquiry...") {
+          updated[updated.length - 1].text = reply;
+        } else {
+          updated.push({ role: "assistant", text: reply });
+        }
+        return updated;
+      });
+
+      // Log to chat webhook
       sendChatWebhook(text, reply, highValue);
-    }, 280);
+    } catch (err) {
+      console.error("MiMo fetch error:", err);
+      const fallbackReply = "I'm experiencing technical difficulties. Please try again or submit a private inquiry.";
+
+      setMessages((prev) => {
+        const updated = [...prev];
+        if (updated[updated.length - 1].text === "Processing your inquiry...") {
+          updated[updated.length - 1].text = fallbackReply;
+        } else {
+          updated.push({ role: "assistant", text: fallbackReply });
+        }
+        return updated;
+      });
+
+      sendChatWebhook(text, fallbackReply, highValue);
+    }
   }
 
   function handleFormSubmit(e: FormEvent) {

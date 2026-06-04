@@ -119,10 +119,66 @@ supabase/
 
 ## Deployment (Vercel)
 
+### Initial Deployment (✅ Complete)
+
+The site has been deployed to Vercel at: **https://executive-ai-concierge-services.vercel.app**
+
+**Completed steps:**
+1. Project linked to Vercel (new project)
+2. Supabase schema applied to production database
+3. Core environment variables added:
+   - `SUPABASE_URL` ✅
+   - `SUPABASE_ANON_KEY` ✅ (marked sensitive)
+   - `SUPABASE_SERVICE_ROLE_KEY` ✅ (marked server-only)
+
+### Configuring Additional Variables
+
+To fully activate encryption and webhooks, add these variables in **Vercel → Project → Settings → Environment Variables**:
+
+**Encryption (Recommended):**
+```
+LEAD_ENCRYPTION_PUBLIC_KEY_JWK = (your RSA public key in JWK format)
+LEAD_ENCRYPTION_PRIVATE_KEY_PEM = (your RSA private key in PEM format) — Mark as Server only
+```
+
+**Webhooks (Optional but Recommended):**
+```
+CRM_WEBHOOK_URL = (your CRM webhook endpoint)
+GMAIL_ALERT_WEBHOOK_URL = (your email alert webhook endpoint)
+```
+
+**Google Sheets Fallback (Optional):**
+```
+USE_GOOGLE_SHEETS_FALLBACK = true
+GOOGLE_SERVICE_ACCOUNT_EMAIL = (your service account email)
+GOOGLE_PRIVATE_KEY = (your service account private key with escaped \n) — Mark as Server only
+GOOGLE_SHEET_ID = (your target Google Sheet ID)
+GOOGLE_SHEET_RANGE = ExecutiveAILeads!A:Q
+```
+
+**Always mark as Server only:**
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `LEAD_ENCRYPTION_PRIVATE_KEY_PEM`
+- `GOOGLE_PRIVATE_KEY`
+
+### Redeploying with New Variables
+
+After adding environment variables in Vercel, trigger a redeploy:
+
 ```bash
 npx vercel --prod
 ```
 
-Add all environment variables in Vercel → Project → Settings → Environment Variables.
+Or redeploy from the Vercel dashboard (Settings → Deployments → Redeploy).
 
-Mark `SUPABASE_SERVICE_ROLE_KEY`, `LEAD_ENCRYPTION_PRIVATE_KEY_PEM`, and `GOOGLE_PRIVATE_KEY` as **Server** only (not Edge, not browser).
+### Post-Deployment Testing
+
+1. Visit https://executive-ai-concierge-services.vercel.app
+2. Navigate through all pages — verify no 404 errors
+3. Go to `/apply` page
+4. Submit a test lead form
+5. Check Supabase `executive_concierge_leads` table for new row
+6. If webhooks configured, verify high-value leads trigger notifications
+7. Monitor Vercel logs for any runtime errors
+
+See `DEPLOYMENT_CHECKLIST.md` for detailed testing procedures.
