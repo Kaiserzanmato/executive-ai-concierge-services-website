@@ -21,10 +21,11 @@ Full production-ready Next.js 15 + Tailwind CSS website built, tested, and deplo
 - ✅ `/terms` — Full Terms of Service
 - ✅ `/apply` — Private Inquiry page with encrypted lead form
 
-### API Routes (3 total)
+### API Routes (4 total)
 - ✅ `POST /api/leads` — Lead capture with validation, scoring, Supabase insert, webhook dispatch, Google Sheets fallback
 - ✅ `POST /api/concierge-chat` — Chat session logging with high-value signal detection and CRM alerts
 - ✅ `GET /api/public-encryption-key` — RSA public key serving (JWK format)
+- ✅ `POST /api/concierge-mimo` — Xiaomi MiMo integration with grounded knowledge base (prevents hallucinations)
 
 ### Core Components
 - ✅ **Navigation.tsx** — Responsive fixed nav with scroll detection, mobile hamburger, logo animation
@@ -33,6 +34,15 @@ Full production-ready Next.js 15 + Tailwind CSS website built, tested, and deplo
 - ✅ **AIConciergeWidget.tsx** — Fixed bottom-right chat widget with high-value signal detection, local fallback answers
 - ✅ **PhaseCard.tsx** — Reusable service phase card component
 - ✅ **TrustStrip.tsx** — Trust badge strip (6 badges)
+
+### AI Integration
+- ✅ **Xiaomi MiMo Powered Concierge** — `/api/concierge-mimo` with:
+  - System prompt grounding (prevents hallucinations)
+  - Knowledge base embedded (4 phases, trust model, security stance, pricing)
+  - Real-time API calls to MiMo model
+  - Loading state UI during processing
+  - Fallback responses on API failure
+  - All responses constrained to service scope
 
 ### Backend & Security
 - ✅ **Supabase Schema** — 4 tables with RLS (deny-all policies)
@@ -61,6 +71,7 @@ npm run build result:
 - ✅ `SUPABASE_URL` (non-sensitive)
 - ✅ `SUPABASE_ANON_KEY` (sensitive)
 - ✅ `SUPABASE_SERVICE_ROLE_KEY` (sensitive, server-only)
+- ✅ `XIAOMI_MIMO_API_KEY` (sensitive, server-only) — Powers AI Concierge widget
 
 **Ready to configure (optional):**
 - `LEAD_ENCRYPTION_PUBLIC_KEY_JWK` — RSA public key for client-side encryption
