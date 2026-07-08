@@ -1,17 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { SectionShell } from "../SectionShell";
 
 export interface ConsultationPreferencesAnswers {
   wantsConsultation: boolean;
-  preferredContactMethod: string;
-  preferredTiming: string;
-  notes: string;
 }
-
-const CONTACT_METHODS = ["Email", "Phone", "Signal", "Secure message"];
-const TIMING_OPTIONS = ["As soon as possible", "Within a week", "Within a month", "No preference"];
 
 export function ConsultationPreferencesSection({
   defaultValues,
@@ -24,19 +19,16 @@ export function ConsultationPreferencesSection({
   onNext: (answers: ConsultationPreferencesAnswers) => void;
   submitting?: boolean;
 }) {
-  const [wantsConsultation, setWantsConsultation] = useState<boolean>(defaultValues?.wantsConsultation ?? false);
-  const [preferredContactMethod, setPreferredContactMethod] = useState<string>(
-    defaultValues?.preferredContactMethod ?? ""
+  const [wantsConsultation, setWantsConsultation] = useState<boolean>(
+    defaultValues?.wantsConsultation ?? false
   );
-  const [preferredTiming, setPreferredTiming] = useState<string>(defaultValues?.preferredTiming ?? "");
-  const [notes, setNotes] = useState<string>(defaultValues?.notes ?? "");
 
   return (
     <SectionShell
       title="Consultation Preferences"
-      description="Let us know if you'd like a private consultation once your results are ready."
+      description="Would you like to schedule a private consultation?"
       onBack={onBack}
-      onNext={() => onNext({ wantsConsultation, preferredContactMethod, preferredTiming, notes })}
+      onNext={() => onNext({ wantsConsultation })}
       isLast
       submitting={submitting}
     >
@@ -48,56 +40,14 @@ export function ConsultationPreferencesSection({
           className="h-4 w-4 rounded border-white/20 bg-ink-800 accent-gold-300 cursor-pointer"
         />
         <span className="text-sm text-platinum-100">
-          I would like to schedule a private consultation after reviewing my results.
+          Yes, I'd like to schedule a private consultation.
         </span>
       </label>
 
       {wantsConsultation && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="form-label">Preferred contact method</label>
-              <select
-                className="form-field"
-                value={preferredContactMethod}
-                onChange={(e) => setPreferredContactMethod(e.target.value)}
-              >
-                <option value="">Select a method</option>
-                {CONTACT_METHODS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="form-label">Preferred timing</label>
-              <select
-                className="form-field"
-                value={preferredTiming}
-                onChange={(e) => setPreferredTiming(e.target.value)}
-              >
-                <option value="">Select a timeframe</option>
-                {TIMING_OPTIONS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="form-label">Anything else we should know?</label>
-            <textarea
-              className="form-field resize-none"
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional context for your consultation..."
-            />
-          </div>
-        </>
+        <Link href="/apply" className="btn-primary inline-block mt-4">
+          Schedule Private Consultation
+        </Link>
       )}
     </SectionShell>
   );
