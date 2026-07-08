@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import AIConciergeWidget from "@/components/AIConciergeWidget";
 
 export const metadata: Metadata = {
   title: {
@@ -51,7 +50,6 @@ export default function RootLayout({
         <Navigation />
         <main>{children}</main>
         <Footer />
-        <AIConciergeWidget />
       </body>
     </html>
   );
