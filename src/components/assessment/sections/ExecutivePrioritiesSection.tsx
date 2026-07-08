@@ -14,7 +14,7 @@ const PRIORITY_OPTIONS = [
 ];
 
 const TIME_HORIZONS = [
-  "Immediate — within 30 days",
+  "In 30 Days",
   "This quarter",
   "Next 6 months",
   "Strategic planning stage, no fixed timeline",
