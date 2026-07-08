@@ -86,8 +86,6 @@ const urgencyOptions = [
   "Strategic planning stage",
 ];
 
-const contactOptions = ["Email", "Phone", "Signal", "Secure message"];
-
 export default function InquiryForm() {
   const [status, setStatus] = useState<FormStatus>("idle");
   const [errors, setErrors] = useState<string[]>([]);
@@ -145,7 +143,6 @@ export default function InquiryForm() {
       company: String(data.get("company") || "").trim(),
       roleTitle: String(data.get("roleTitle") || "").trim(),
       country: String(data.get("country") || "").trim(),
-      preferredContactMethod: String(data.get("preferredContactMethod") || "email").trim(),
       clientCategory: String(data.get("clientCategory") || "").trim(),
       estimatedBudgetRange: String(data.get("estimatedBudgetRange") || "").trim(),
       desiredPhase: String(data.get("desiredPhase") || "").trim(),
@@ -285,19 +282,6 @@ export default function InquiryForm() {
             className="form-field"
           />
         </div>
-      </div>
-
-      <div>
-        <label htmlFor="preferredContactMethod" className="form-label">
-          Preferred contact method
-        </label>
-        <select id="preferredContactMethod" name="preferredContactMethod" className="form-field">
-          {contactOptions.map((o) => (
-            <option key={o} value={o.toLowerCase()}>
-              {o}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div>
