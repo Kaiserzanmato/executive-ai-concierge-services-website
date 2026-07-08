@@ -26,6 +26,39 @@ const EXECUTIVE_TYPES = [
   "Other Executive Decision Maker",
 ];
 
+const INDUSTRIES = [
+  "Technology / Software / SaaS",
+  "Artificial Intelligence / Automation",
+  "Financial Services / Banking",
+  "Investment Banking",
+  "Private Banking / Wealth Management",
+  "Venture Capital / Private Equity",
+  "Family Office",
+  "Insurance / InsurTech",
+  "Healthcare / Life Sciences",
+  "Professional Services / Consulting",
+  "Legal Services",
+  "Real Estate / Property Development",
+  "Luxury / Concierge / Private Client Services",
+  "Media / Entertainment / Creator Economy",
+  "Sports / Athlete Management",
+  "Retail / E-commerce / Consumer Goods",
+  "Hospitality / Travel / Tourism",
+  "Manufacturing / Industrial",
+  "Logistics / Supply Chain",
+  "Energy / Utilities / CleanTech",
+  "Education / Training / EdTech",
+  "Government / Public Sector",
+  "Nonprofit / Foundation / Social Impact",
+  "Telecommunications",
+  "Cybersecurity / Risk / Compliance",
+  "Crypto / Web3 / Digital Assets",
+  "Trading: Forex / Stocks / Crypto",
+  "Agriculture / Food / Natural Resources",
+  "Construction / Infrastructure",
+  "Other",
+];
+
 const COMPANY_SIZES = ["Solo / Independent", "2-10", "11-50", "51-200", "201-1,000", "1,000+"];
 const INCOME_RANGES = ["Under $500K", "$500K - $1M", "$1M - $5M", "$5M - $25M", "$25M+", "Prefer not to say"];
 
@@ -106,13 +139,18 @@ export function ExecutiveProfileSection({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label className="form-label">Industry</label>
-          <input
-            type="text"
+          <select
             className="form-field"
             value={values.industry}
             onChange={(e) => setValues({ ...values, industry: e.target.value })}
-            placeholder="e.g., Technology, Finance, Media"
-          />
+          >
+            <option value="">Select your industry</option>
+            {INDUSTRIES.map((i) => (
+              <option key={i} value={i}>
+                {i}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="form-label">Organization size</label>
