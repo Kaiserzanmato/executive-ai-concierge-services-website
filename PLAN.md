@@ -1,8 +1,8 @@
 # Executive AI Concierge Services — Project Plan & Progress
 
-**Status:** Production live with AI Concierge  
+**Status:** Production live with AI Concierge + Executive Operations Assessment Platform  
 **Live URL:** https://executive-ai-concierge-services.vercel.app  
-**Last Updated:** 2026-06-04
+**Last Updated:** 2026-07-08
 
 ---
 
@@ -34,6 +34,58 @@
 - ✅ Session tracking for CRM alerts
 
 **Deliverables:** Full production website with encrypted lead form, secure database, AI-powered concierge widget.
+
+---
+
+## Phase 1.6: Executive Operations Assessment Platform (✅ Complete)
+
+### New Route & Wizard
+- ✅ `/assessment` — 11-section multi-step wizard (Executive Profile, Time Audit, Operational
+  Bottlenecks, AI Automation Opportunities, Executive Assistant/CoS, AI Comfort Level, Human
+  Approval Preferences, Technology Stack, Security & Privacy, Executive Priorities, Consultation
+  Preferences)
+- ✅ Progress bar with step count + estimated time remaining
+- ✅ Per-step autosave to Supabase
+- ✅ Resume-later via localStorage-held resume token (no email gate required)
+- ✅ `/assessment/results` — personalized scores, ranked bottlenecks/opportunities, phase
+  recommendation, downloads, email-report, consultation request
+
+### Scoring Engine
+- ✅ Deterministic, rules-based scoring (`src/lib/assessmentScoring.ts`) — no LLM call, fast and
+  free
+- ✅ Executive Operations Score + AI Readiness Score (0-100)
+- ✅ Estimated hours recoverable per week
+- ✅ Recommended phase (1-4) derived from executive type, EA/CoS presence, AI comfort, and
+  security tier
+
+### Report Generation
+- ✅ PDF via `@react-pdf/renderer` (serverless-friendly, no headless browser)
+- ✅ Markdown, plain text, and CSV — hand-rolled, no extra dependencies
+- ✅ "Email me this report" via `resend` (new dependency, requires `RESEND_API_KEY`)
+
+### Database & Security
+- ✅ 5 new Supabase tables (`assessment_respondents`, `assessment_responses`,
+  `assessment_scores`, `consultation_requests`, `assessment_rate_limits`) — see
+  `supabase/assessment-schema.sql`
+- ✅ Deny-all RLS on every table, service-role only (matches existing schema conventions)
+- ✅ **Rate limiting:** pluggable `RateLimiter` interface (`src/lib/rateLimiter.ts`) — Supabase-backed
+  implementation today, swappable for Upstash Redis later with zero API route changes. Limit: **5
+  assessment starts per IP per hour**, tracked via SHA-256 IP hash + timestamp only (raw IPs never
+  stored). Returns HTTP 429 with a user-facing message when exceeded.
+- ✅ CRM webhook fired on high-intent completions/consultation requests (`ASSESSMENT_CONSULTATION_WEBHOOK_URL`)
+
+### No Regressions
+- ✅ Only 4 pre-existing files touched: `.env.local.example`, `package.json`/`package-lock.json`
+  (new deps), and `src/components/Navigation.tsx` (single "Free Assessment" nav link added)
+- ✅ Build verified: 27/27 pages, 0 errors
+
+**Deliverables:** Premium, anonymous-first assessment funnel positioning the brand as a trusted
+advisor ahead of the `/apply` consultation form.
+
+**Outstanding for full activation:**
+- [ ] Run `supabase/assessment-schema.sql` in the Supabase SQL editor (✅ done 2026-07-08)
+- [ ] Add `RESEND_API_KEY` to Vercel production env vars (email-report currently fails gracefully without it)
+- [ ] Optionally add `ASSESSMENT_CONSULTATION_WEBHOOK_URL` for CRM handoff on high-intent completions
 
 ---
 
@@ -180,14 +232,16 @@
 
 ## Summary: What's Done vs. What's Ahead
 
-### ✅ Complete (Phase 1)
+### ✅ Complete (Phase 1 + 1.6)
 | Component | Status | Details |
 |-----------|--------|---------|
 | **Site Build** | ✅ | 11 pages, responsive, 0 errors |
-| **Database** | ✅ | Supabase with RLS, 4 tables |
+| **Database** | ✅ | Supabase with RLS, 4 core tables + 5 assessment tables |
 | **Lead Form** | ✅ | Validation, sanitization, honeypot |
 | **AI Concierge** | ✅ | MiMo-powered with grounding |
 | **Lead Scoring** | ✅ | High-value detection |
+| **Assessment Platform** | ✅ | 11-section wizard, scoring engine, PDF/MD/TXT/CSV reports |
+| **Rate Limiting** | ✅ | Pluggable Supabase-backed, 5/hr per IP, swappable for Upstash |
 | **Deployment** | ✅ | Vercel production, HTTPS, auto-scaling |
 
 ### ⏳ Ready to Implement (Phases 2-7)

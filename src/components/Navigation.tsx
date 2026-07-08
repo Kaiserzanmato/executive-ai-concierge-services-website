@@ -9,6 +9,7 @@ const navLinks = [
   { href: "/services", label: "Services" },
   { href: "/operating-model", label: "Operating Model" },
   { href: "/trust", label: "Trust Center" },
+  { href: "/assessment", label: "Free Assessment" },
   { href: "/apply", label: "Apply" },
 ];
 
