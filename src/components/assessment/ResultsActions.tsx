@@ -5,8 +5,8 @@ import { useState } from "react";
 export function ResultsActions({ resumeToken }: { resumeToken: string }) {
   const [consultOpen, setConsultOpen] = useState(false);
   const [consultStatus, setConsultStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [contactMethod, setContactMethod] = useState("Email");
-  const [timing, setTiming] = useState("As soon as possible");
+  const [contactEmail, setContactEmail] = useState("");
+  const [timing, setTiming] = useState("Within a week");
   const [notes, setNotes] = useState("");
 
   async function handleConsultationSubmit(e: React.FormEvent) {
@@ -18,7 +18,7 @@ export function ResultsActions({ resumeToken }: { resumeToken: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           resumeToken,
-          preferredContactMethod: contactMethod,
+          preferredContactMethod: contactEmail,
           preferredTiming: timing,
           notes,
         }),
@@ -46,14 +46,15 @@ export function ResultsActions({ resumeToken }: { resumeToken: string }) {
         ) : consultOpen ? (
           <form onSubmit={handleConsultationSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <select className="form-field" value={contactMethod} onChange={(e) => setContactMethod(e.target.value)}>
-                <option>Email</option>
-                <option>Phone</option>
-                <option>Signal</option>
-                <option>Secure message</option>
-              </select>
+              <input
+                type="email"
+                required
+                className="form-field"
+                placeholder="your@organization.com"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+              />
               <select className="form-field" value={timing} onChange={(e) => setTiming(e.target.value)}>
-                <option>As soon as possible</option>
                 <option>Within a week</option>
                 <option>Within a month</option>
                 <option>No preference</option>
