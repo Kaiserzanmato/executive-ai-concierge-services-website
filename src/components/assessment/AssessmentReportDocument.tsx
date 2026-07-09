@@ -143,6 +143,17 @@ export function AssessmentReportDocument({ data }: { data: ReportData }) {
           <Text style={styles.listItem}>None identified.</Text>
         )}
 
+        <Text style={styles.sectionTitle}>Recommended Services</Text>
+        {scores.recommendedServices.length > 0 ? (
+          scores.recommendedServices.map((s, i) => (
+            <Text key={i} style={styles.listItem}>
+              {i + 1}. {s}
+            </Text>
+          ))
+        ) : (
+          <Text style={styles.listItem}>None identified.</Text>
+        )}
+
         <View style={styles.recommendationBox}>
           <Text style={styles.recommendationText}>{PHASE_LABELS[scores.recommendedPhase]}</Text>
           <Text style={styles.listItem}>
@@ -150,6 +161,7 @@ export function AssessmentReportDocument({ data }: { data: ReportData }) {
               ? "We recommend a private consultation to discuss implementation."
               : "Review the recommended phase details on our services pages."}
           </Text>
+          <Text style={[styles.listItem, { marginTop: 6 }]}>Suggested next step: {scores.suggestedNextStep}</Text>
         </View>
 
         <Text style={styles.footer}>

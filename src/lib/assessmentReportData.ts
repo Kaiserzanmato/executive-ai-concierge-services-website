@@ -16,7 +16,7 @@ export async function loadReportData(resumeToken: string): Promise<ReportData | 
   const { data: scoreRow, error: scoreError } = await db
     .from("executive_concierge_assessment_scores")
     .select(
-      "operations_score, ai_readiness_score, hours_recoverable_per_week, top_bottlenecks, top_automation_opportunities, recommended_phase, recommend_consultation"
+      "operations_score, ai_readiness_score, hours_recoverable_per_week, top_bottlenecks, top_automation_opportunities, recommended_phase, recommend_consultation, recommended_services, suggested_next_step"
     )
     .eq("respondent_id", respondent.id)
     .single();
@@ -31,6 +31,8 @@ export async function loadReportData(resumeToken: string): Promise<ReportData | 
     topAutomationOpportunities: scoreRow.top_automation_opportunities ?? [],
     recommendedPhase: scoreRow.recommended_phase,
     recommendConsultation: scoreRow.recommend_consultation,
+    recommendedServices: scoreRow.recommended_services ?? [],
+    suggestedNextStep: scoreRow.suggested_next_step ?? "",
   };
 
   return {

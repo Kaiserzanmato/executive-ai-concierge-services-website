@@ -8,12 +8,42 @@ export interface AssessmentScoreResult {
   topAutomationOpportunities: string[];
   recommendedPhase: 1 | 2 | 3 | 4;
   recommendConsultation: boolean;
+  recommendedServices: string[];
+  suggestedNextStep: string;
 }
 
-function num(value: unknown, fallback = 0): number {
-  const n = typeof value === "number" ? value : parseFloat(String(value));
-  return Number.isFinite(n) ? n : fallback;
-}
+const PHASE_LABELS: Record<1 | 2 | 3 | 4, string> = {
+  1: "Phase 1 — Productivity Hub",
+  2: "Phase 2 — AI Executive Assistant Integration",
+  3: "Phase 3 — Personalized AI Concierge",
+  4: "Phase 4 — White-Glove Implementation",
+};
+
+const DELEGATION_PERCENT: Record<string, number> = {
+  "Less than 20%": 15,
+  "Around 25%": 25,
+  "Around 50%": 50,
+  "Around 75%": 75,
+  "As much as safely possible": 90,
+};
+
+const INVESTMENT_BONUS: Record<string, number> = {
+  "Executive Starter — US$3,000–5,000": 10,
+  "Executive Plus — US$6,000–10,000": 15,
+  "Enterprise Custom Build — Custom pricing after consultation": 20,
+  "Not sure yet — recommend the best option": 5,
+  "Prefer to discuss privately": 10,
+};
+
+const TIMELINE_URGENCY_BONUS: Record<string, number> = {
+  "Just exploring": 0,
+  "Within 3 months": 10,
+  "Within 30 days": 15,
+  "Not sure": 5,
+};
+
+const NOT_SURE_INVESTMENT = "Not sure yet — recommend the best option";
+const META_SERVICE_OPTIONS = ["Not sure yet", "Other / Custom Request"];
 
 function str(value: unknown): string {
   return typeof value === "string" ? value : "";
@@ -21,10 +51,6 @@ function str(value: unknown): string {
 
 function bool(value: unknown): boolean {
   return value === true;
-}
-
-function record(value: unknown): Record<string, number> {
-  return value && typeof value === "object" ? (value as Record<string, number>) : {};
 }
 
 function list(value: unknown): string[] {
@@ -35,92 +61,100 @@ function clamp(value: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function rankBySeverity(items: string[], severity: Record<string, number>, take = 3): string[] {
-  return [...items]
-    .sort((a, b) => (severity[b] ?? 3) - (severity[a] ?? 3))
-    .slice(0, take);
-}
-
 export function scoreAssessment(answers: Record<string, AssessmentAnswers>): AssessmentScoreResult {
   const profile = answers.executive_profile ?? {};
-  const timeAudit = answers.time_audit ?? {};
-  const bottlenecks = answers.operational_bottlenecks ?? {};
-  const automation = answers.ai_automation_opportunities ?? {};
-  const eaSection = answers.executive_assistant ?? {};
-  const aiComfort = answers.ai_comfort_level ?? {};
-  const approval = answers.human_approval_preferences ?? {};
-  const techStack = answers.technology_stack ?? {};
-  const security = answers.security_privacy ?? {};
+  const motivations = answers.motivations ?? {};
+  const timeDrainAreas = answers.time_drain_areas ?? {};
+  const desiredOutcomes = answers.desired_outcomes ?? {};
+  const delegation = answers.ai_delegation_level ?? {};
+  const servicesInterest = answers.ai_services_interest ?? {};
+  const currentTools = answers.current_ai_tools ?? {};
+  const timeline = answers.implementation_timeline ?? {};
+  const investment = answers.investment_readiness ?? {};
   const consultation = answers.consultation_preferences ?? {};
 
-  // ── Time audit ──────────────────────────────────────────────
-  const totalHoursLost =
-    num(timeAudit.hoursPerWeekCalendar) +
-    num(timeAudit.hoursPerWeekInbox) +
-    num(timeAudit.hoursPerWeekMeetingPrep) +
-    num(timeAudit.hoursPerWeekTravel) +
-    num(timeAudit.hoursPerWeekAdminOther);
+  const reasons = list(motivations.reasons);
+  const areas = list(timeDrainAreas.areas);
+  const outcomes = list(desiredOutcomes.outcomes);
+  const delegationLevel = str(delegation.level);
+  const services = list(servicesInterest.services);
+  const tools = list(currentTools.tools);
+  const timelineValue = str(timeline.timeline);
+  const investmentLevel = str(investment.level);
+  const executiveType = str(profile.executiveType);
 
-  // ── Bottlenecks ─────────────────────────────────────────────
-  const bottleneckItems = list(bottlenecks.bottlenecks);
-  const bottleneckSeverity = record(bottlenecks.severity);
-  const avgSeverity =
-    bottleneckItems.length > 0
-      ? bottleneckItems.reduce((sum, b) => sum + (bottleneckSeverity[b] ?? 3), 0) / bottleneckItems.length
-      : 3;
+  // ── Operations score: fewer selected pain points = less friction ──
+  const operationsScore = Math.round(clamp(100 - areas.length * 6 - reasons.length * 4));
 
-  // ── Automation opportunities ────────────────────────────────
-  const opportunityItems = list(automation.opportunities);
-  const opportunityPriority = record(automation.priority);
-
-  // ── AI comfort / approval / tech stack ──────────────────────
-  const comfortLevel = num(aiComfort.comfortLevel, 3);
-  const priorAiUse = bool(aiComfort.priorAiUse);
-  const approvalStyle = str(approval.approvalStyle); // 'full_autonomy' | 'approval_required' | 'hybrid'
-  const integrationComplexity = str(techStack.integrationComplexity); // 'low' | 'medium' | 'high'
-
-  // ── Scores ──────────────────────────────────────────────────
-  const operationsScore = Math.round(
-    clamp(100 - totalHoursLost * 3 - avgSeverity * 8)
-  );
+  // ── AI readiness score ──────────────────────────────────────────
+  const delegationPercent = DELEGATION_PERCENT[delegationLevel] ?? 0;
+  const usesAnyAiTool = tools.some((t) => t !== "None");
+  const investmentBonus = INVESTMENT_BONUS[investmentLevel] ?? 0;
+  const timelineBonus = TIMELINE_URGENCY_BONUS[timelineValue] ?? 0;
 
   const aiReadinessScore = Math.round(
-    clamp(
-      comfortLevel * 15 +
-        (approvalStyle === "full_autonomy" ? 20 : approvalStyle === "hybrid" ? 10 : 0) +
-        (integrationComplexity === "low" ? 15 : integrationComplexity === "medium" ? 8 : 0) +
-        (priorAiUse ? 10 : 0)
-    )
+    clamp(delegationPercent * 0.5 + (usesAnyAiTool ? 20 : 0) + investmentBonus + timelineBonus)
   );
 
-  const hoursRecoverablePerWeek = Math.round(totalHoursLost * 0.6 * 10) / 10;
+  // ── Estimated time savings ──────────────────────────────────────
+  const hoursRecoverablePerWeek = Math.round(areas.length * 2 * 10) / 10;
 
-  const topBottlenecks = rankBySeverity(bottleneckItems, bottleneckSeverity, 3);
-  const topAutomationOpportunities = rankBySeverity(opportunityItems, opportunityPriority, 3);
+  // ── Ranked lists ────────────────────────────────────────────────
+  const topBottlenecks = areas.slice(0, 3);
 
-  // ── Phase recommendation (deterministic business rules) ─────
-  const executiveType = str(profile.executiveType);
-  const securityTier = str(security.securityTier); // 'standard' | 'elevated' | 'maximum'
-  const hasEA = bool(eaSection.hasEA);
-  const eaType = str(eaSection.eaType); // 'none' | 'part_time' | 'full_time' | 'chief_of_staff'
+  const explicitServices = services.filter((s) => !META_SERVICE_OPTIONS.includes(s));
+  const topAutomationOpportunities =
+    explicitServices.length > 0 ? explicitServices.slice(0, 3) : outcomes.slice(0, 3);
 
-  let recommendedPhase: 1 | 2 | 3 | 4 = 1;
+  // ── Recommended service/s ───────────────────────────────────────
+  let recommendedServices: string[];
+  if (explicitServices.length > 0) {
+    recommendedServices = explicitServices.slice(0, 3);
+  } else {
+    const derived: string[] = [];
+    if (delegationPercent >= 75) derived.push("Autonomous AI Agents");
+    if (outcomes.includes("Delegate more work") || outcomes.includes("Save time")) {
+      derived.push("Executive AI Assistant");
+    }
+    if (outcomes.includes("Reduce operating costs") || outcomes.includes("Scale operations")) {
+      derived.push("Workflow Automation");
+    }
+    recommendedServices = derived.length > 0 ? derived.slice(0, 3) : ["Executive AI Concierge"];
+  }
 
+  // ── Phase recommendation (deterministic, re-keyed to new inputs) ─
   const premiumExecTypes = ["UHNWI", "Celebrity", "Professional Athlete", "Family Office"];
   const personalizationExecTypes = ["Founder", "UHNWI", "Public Figure"];
 
-  if (premiumExecTypes.includes(executiveType) || securityTier === "maximum") {
+  let recommendedPhase: 1 | 2 | 3 | 4;
+  if (
+    investmentLevel === "Enterprise Custom Build — Custom pricing after consultation" ||
+    delegationLevel === "As much as safely possible" ||
+    premiumExecTypes.includes(executiveType)
+  ) {
     recommendedPhase = 4;
-  } else if (hasEA && (eaType === "full_time" || eaType === "chief_of_staff")) {
+  } else if (
+    investmentLevel === "Executive Plus — US$6,000–10,000" ||
+    recommendedServices.includes("Executive AI Assistant")
+  ) {
     recommendedPhase = 2;
-  } else if (personalizationExecTypes.includes(executiveType) && comfortLevel >= 3) {
+  } else if (recommendedServices.includes("Executive AI Concierge") && personalizationExecTypes.includes(executiveType)) {
     recommendedPhase = 3;
   } else {
     recommendedPhase = 1;
   }
 
+  // ── Consultation recommendation ─────────────────────────────────
   const recommendConsultation =
-    operationsScore < 50 || aiReadinessScore >= 70 || bool(consultation.wantsConsultation);
+    operationsScore < 50 ||
+    aiReadinessScore >= 70 ||
+    (investmentLevel !== "" && investmentLevel !== NOT_SURE_INVESTMENT) ||
+    bool(consultation.wantsConsultation);
+
+  // ── Suggested next step ─────────────────────────────────────────
+  const suggestedNextStep = recommendConsultation
+    ? `Schedule a private consultation to scope your ${recommendedServices[0]} implementation.`
+    : `Explore the ${PHASE_LABELS[recommendedPhase]} details on our services pages or request a consultation when you're ready.`;
 
   return {
     operationsScore,
@@ -130,5 +164,7 @@ export function scoreAssessment(answers: Record<string, AssessmentAnswers>): Ass
     topAutomationOpportunities,
     recommendedPhase,
     recommendConsultation,
+    recommendedServices,
+    suggestedNextStep,
   };
 }

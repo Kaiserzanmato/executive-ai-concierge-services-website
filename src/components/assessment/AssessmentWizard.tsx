@@ -3,16 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ASSESSMENT_SECTIONS } from "@/lib/assessmentSections";
+import type { AssessmentScoreResult } from "@/lib/assessmentScoring";
 import { ExecutiveProfileSection } from "./sections/ExecutiveProfileSection";
-import { TimeAuditSection } from "./sections/TimeAuditSection";
-import { OperationalBottlenecksSection } from "./sections/OperationalBottlenecksSection";
-import { AIAutomationOpportunitiesSection } from "./sections/AIAutomationOpportunitiesSection";
-import { ExecutiveAssistantSection } from "./sections/ExecutiveAssistantSection";
-import { AIComfortLevelSection } from "./sections/AIComfortLevelSection";
-import { HumanApprovalPreferencesSection } from "./sections/HumanApprovalPreferencesSection";
-import { TechnologyStackSection } from "./sections/TechnologyStackSection";
-import { SecurityPrivacySection } from "./sections/SecurityPrivacySection";
-import { ExecutivePrioritiesSection } from "./sections/ExecutivePrioritiesSection";
+import { MotivationsSection } from "./sections/MotivationsSection";
+import { TimeDrainAreasSection } from "./sections/TimeDrainAreasSection";
+import { DesiredOutcomesSection } from "./sections/DesiredOutcomesSection";
+import { AIDelegationLevelSection } from "./sections/AIDelegationLevelSection";
+import { AIServicesInterestSection } from "./sections/AIServicesInterestSection";
+import { CurrentAIToolsSection } from "./sections/CurrentAIToolsSection";
+import { ImplementationTimelineSection } from "./sections/ImplementationTimelineSection";
+import { InvestmentReadinessSection } from "./sections/InvestmentReadinessSection";
+import { RecommendationSection } from "./sections/RecommendationSection";
 import { ConsultationPreferencesSection } from "./sections/ConsultationPreferencesSection";
 
 const RESUME_TOKEN_KEY = "assessment_resume_token";
@@ -28,6 +29,7 @@ export function AssessmentWizard() {
   const [answers, setAnswers] = useState<Record<string, Record<string, unknown>>>({});
   const [savingStep, setSavingStep] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [previewScores, setPreviewScores] = useState<AssessmentScoreResult | null>(null);
 
   useEffect(() => {
     async function init() {
@@ -64,6 +66,29 @@ export function AssessmentWizard() {
 
     init();
   }, []);
+
+  useEffect(() => {
+    const section = ASSESSMENT_SECTIONS[currentStep - 1];
+    if (!resumeToken || !section || section.key !== "recommendation" || previewScores) return;
+
+    async function fetchPreview() {
+      try {
+        const res = await fetch("/api/assessment/preview", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ resumeToken }),
+        });
+        const result = await res.json();
+        if (res.ok && result.ok) {
+          setPreviewScores(result.scores);
+        }
+      } catch {
+        // silent — RecommendationSection shows a loading state until this resolves
+      }
+    }
+
+    fetchPreview();
+  }, [currentStep, resumeToken, previewScores]);
 
   async function handleSectionNext(sectionKey: string, sectionAnswers: Record<string, unknown>) {
     if (!resumeToken) return;
@@ -166,75 +191,75 @@ export function AssessmentWizard() {
           submitting={savingStep}
         />
       )}
-      {section.key === "time_audit" && (
-        <TimeAuditSection
-          defaultValues={answers.time_audit}
+      {section.key === "motivations" && (
+        <MotivationsSection
+          defaultValues={answers.motivations}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("time_audit", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("motivations", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "operational_bottlenecks" && (
-        <OperationalBottlenecksSection
-          defaultValues={answers.operational_bottlenecks}
+      {section.key === "time_drain_areas" && (
+        <TimeDrainAreasSection
+          defaultValues={answers.time_drain_areas}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("operational_bottlenecks", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("time_drain_areas", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "ai_automation_opportunities" && (
-        <AIAutomationOpportunitiesSection
-          defaultValues={answers.ai_automation_opportunities}
+      {section.key === "desired_outcomes" && (
+        <DesiredOutcomesSection
+          defaultValues={answers.desired_outcomes}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("ai_automation_opportunities", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("desired_outcomes", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "executive_assistant" && (
-        <ExecutiveAssistantSection
-          defaultValues={answers.executive_assistant}
+      {section.key === "ai_delegation_level" && (
+        <AIDelegationLevelSection
+          defaultValues={answers.ai_delegation_level}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("executive_assistant", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("ai_delegation_level", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "ai_comfort_level" && (
-        <AIComfortLevelSection
-          defaultValues={answers.ai_comfort_level}
+      {section.key === "ai_services_interest" && (
+        <AIServicesInterestSection
+          defaultValues={answers.ai_services_interest}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("ai_comfort_level", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("ai_services_interest", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "human_approval_preferences" && (
-        <HumanApprovalPreferencesSection
-          defaultValues={answers.human_approval_preferences}
+      {section.key === "current_ai_tools" && (
+        <CurrentAIToolsSection
+          defaultValues={answers.current_ai_tools}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("human_approval_preferences", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("current_ai_tools", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "technology_stack" && (
-        <TechnologyStackSection
-          defaultValues={answers.technology_stack}
+      {section.key === "implementation_timeline" && (
+        <ImplementationTimelineSection
+          defaultValues={answers.implementation_timeline}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("technology_stack", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("implementation_timeline", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "security_privacy" && (
-        <SecurityPrivacySection
-          defaultValues={answers.security_privacy}
+      {section.key === "investment_readiness" && (
+        <InvestmentReadinessSection
+          defaultValues={answers.investment_readiness}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("security_privacy", a as unknown as Record<string, unknown>)}
+          onNext={(a) => handleSectionNext("investment_readiness", a as unknown as Record<string, unknown>)}
           submitting={savingStep}
         />
       )}
-      {section.key === "executive_priorities" && (
-        <ExecutivePrioritiesSection
-          defaultValues={answers.executive_priorities}
+      {section.key === "recommendation" && (
+        <RecommendationSection
+          scores={previewScores}
           onBack={handleBack}
-          onNext={(a) => handleSectionNext("executive_priorities", a as unknown as Record<string, unknown>)}
+          onNext={() => handleSectionNext("recommendation", {})}
           submitting={savingStep}
         />
       )}

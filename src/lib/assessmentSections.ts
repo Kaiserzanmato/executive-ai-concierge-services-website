@@ -1,15 +1,15 @@
 export const ASSESSMENT_SECTIONS = [
   { key: "executive_profile", label: "Executive Profile" },
-  { key: "time_audit", label: "Time Audit" },
-  { key: "operational_bottlenecks", label: "Operational Bottlenecks" },
-  { key: "ai_automation_opportunities", label: "AI Automation Opportunities" },
-  { key: "executive_assistant", label: "Executive Assistant / Chief of Staff" },
-  { key: "ai_comfort_level", label: "AI Comfort Level" },
-  { key: "human_approval_preferences", label: "Human Approval Preferences" },
-  { key: "technology_stack", label: "Technology Stack" },
-  { key: "security_privacy", label: "Security & Privacy" },
-  { key: "executive_priorities", label: "Executive Priorities" },
-  { key: "consultation_preferences", label: "Consultation Preferences" },
+  { key: "motivations", label: "What Brings You Here" },
+  { key: "time_drain_areas", label: "Time Drain Areas" },
+  { key: "desired_outcomes", label: "Desired Outcomes" },
+  { key: "ai_delegation_level", label: "AI Delegation Level" },
+  { key: "ai_services_interest", label: "AI Services Interest" },
+  { key: "current_ai_tools", label: "Current AI Usage" },
+  { key: "implementation_timeline", label: "Implementation Timeline" },
+  { key: "investment_readiness", label: "Investment Readiness" },
+  { key: "recommendation", label: "Personalized Recommendation" },
+  { key: "consultation_preferences", label: "Consultation Preference" },
 ] as const;
 
 export type SectionKey = (typeof ASSESSMENT_SECTIONS)[number]["key"];

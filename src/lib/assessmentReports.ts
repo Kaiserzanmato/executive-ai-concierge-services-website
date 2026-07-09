@@ -54,11 +54,17 @@ ${scores.topBottlenecks.map((b, i) => `${i + 1}. ${b}`).join("\n") || "None iden
 
 ${scores.topAutomationOpportunities.map((o, i) => `${i + 1}. ${o}`).join("\n") || "None identified."}
 
+## Recommended Services
+
+${scores.recommendedServices.map((s, i) => `${i + 1}. ${s}`).join("\n") || "None identified."}
+
 ## Recommendation
 
 **${PHASE_LABELS[scores.recommendedPhase]}**
 
 ${scores.recommendConsultation ? "We recommend a private consultation to discuss implementation." : "Review the recommended phase details on our services pages."}
+
+**Suggested next step:** ${scores.suggestedNextStep}
 
 ---
 
@@ -91,11 +97,17 @@ HIGHEST ROI AUTOMATION OPPORTUNITIES
 -------------------------------------
 ${scores.topAutomationOpportunities.map((o, i) => `${i + 1}. ${o}`).join("\n") || "None identified."}
 
+RECOMMENDED SERVICES
+--------------------
+${scores.recommendedServices.map((s, i) => `${i + 1}. ${s}`).join("\n") || "None identified."}
+
 RECOMMENDATION
 --------------
 ${PHASE_LABELS[scores.recommendedPhase]}
 
 ${scores.recommendConsultation ? "We recommend a private consultation to discuss implementation." : "Review the recommended phase details on our services pages."}
+
+Suggested next step: ${scores.suggestedNextStep}
 
 ---
 Executive AI Concierge Services — Confidential Assessment Report
@@ -118,6 +130,8 @@ export function generateCsvSummary(data: ReportData): string {
     "top_automation_opportunities",
     "recommended_phase",
     "recommend_consultation",
+    "recommended_services",
+    "suggested_next_step",
   ];
 
   const escapeCsv = (value: string) => `"${value.replace(/"/g, '""')}"`;
@@ -135,6 +149,8 @@ export function generateCsvSummary(data: ReportData): string {
     scores.topAutomationOpportunities.join("; "),
     PHASE_LABELS[scores.recommendedPhase],
     String(scores.recommendConsultation),
+    scores.recommendedServices.join("; "),
+    scores.suggestedNextStep,
   ].map(escapeCsv);
 
   return `${headers.join(",")}\n${row.join(",")}\n`;

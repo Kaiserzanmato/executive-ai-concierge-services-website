@@ -96,6 +96,20 @@ export default async function AssessmentResultsPage({
           </div>
         </div>
 
+        {/* Recommended Services */}
+        <div className="mt-8 rounded-executive border border-white/10 bg-white/[0.03] p-7">
+          <h3 className="text-lg font-semibold text-ivory-50 mb-3">Recommended Service/s</h3>
+          {scores.recommendedServices.length > 0 ? (
+            <ol className="space-y-2 text-sm text-platinum-200 list-decimal list-inside">
+              {scores.recommendedServices.map((s) => (
+                <li key={s}>{s}</li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-sm text-platinum-300">None identified.</p>
+          )}
+        </div>
+
         {/* Recommendation */}
         <div className="mt-8 rounded-executive border border-gold-300/30 bg-white/[0.03] p-7">
           <p className="section-eyebrow">Recommended</p>
@@ -104,6 +118,10 @@ export default async function AssessmentResultsPage({
             {scores.recommendConsultation
               ? "Based on your results, we recommend a private consultation to discuss implementation."
               : "Review the recommended phase details on our services pages to learn more."}
+          </p>
+          <p className="mt-3 text-sm text-platinum-200 leading-6">
+            <span className="text-ivory-50 font-medium">Suggested next step: </span>
+            {scores.suggestedNextStep}
           </p>
           <Link href="/services" className="btn-secondary mt-5 inline-block">
             Explore Services

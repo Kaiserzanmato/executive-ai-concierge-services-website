@@ -49,6 +49,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           top_automation_opportunities: scores.topAutomationOpportunities,
           recommended_phase: scores.recommendedPhase,
           recommend_consultation: scores.recommendConsultation,
+          recommended_services: scores.recommendedServices,
+          suggested_next_step: scores.suggestedNextStep,
         },
         { onConflict: "respondent_id" }
       );
